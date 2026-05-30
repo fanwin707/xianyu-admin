@@ -9,10 +9,17 @@ import random, string
 
 app = FastAPI(title="闲鱼AI服务自动化交付平台")
 app.add_middleware(SessionMiddleware, secret_key="xianyu-demo-secret-2026")
-templates = Jinja2Templates(directory="templates")
-app.mount("/static", StaticFiles(directory="static"), name="static")
 
-DB = "demo.db"
+# 兼容不同工作目录
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+TMPL_DIR = os.path.join(BASE_DIR, "templates")
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+os.makedirs(STATIC_DIR, exist_ok=True)
+
+templates = Jinja2Templates(directory=TMPL_DIR)
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+DB = os.path.join(BASE_DIR, "demo.db")
 
 # ─── 数据库初始化 ─────────────────────────────────────────────
 def init_db():
