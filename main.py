@@ -1,7 +1,6 @@
 from fastapi import FastAPI, Request, Form, Depends, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 import sqlite3, os, json
 from datetime import datetime, timedelta
@@ -10,14 +9,9 @@ import random, string
 app = FastAPI(title="闲鱼AI服务自动化交付平台")
 app.add_middleware(SessionMiddleware, secret_key="xianyu-demo-secret-2026")
 
-# 兼容不同工作目录
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TMPL_DIR = os.path.join(BASE_DIR, "templates")
-STATIC_DIR = os.path.join(BASE_DIR, "static")
-os.makedirs(STATIC_DIR, exist_ok=True)
-
 templates = Jinja2Templates(directory=TMPL_DIR)
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 DB = os.path.join(BASE_DIR, "demo.db")
 
