@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Token库存 · 闲鱼AI自动化交付平台{% endblock %}
+{% block page_title %}Token 库存管理{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#f6ffed;color:#52c41a;"><i class="bi bi-check2-circle"></i></div>
+      <div class="stat-label">可售库存</div>
+      <div class="stat-value">{{ counts.unused }}</div>
+      <div class="stat-sub">个Token待分配</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#fff3e8;color:#ff6900;"><i class="bi bi-bag-check"></i></div>
+      <div class="stat-label">已售出</div>
+      <div class="stat-value">{{ counts.sold }}</div>
+      <div class="stat-sub">个已发货</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#fff1f0;color:#f5222d;"><i class="bi bi-exclamation-circle"></i></div>
+      <div class="stat-label">已过期</div>
+      <div class="stat-value">{{ counts.expired }}</div>
+      <div class="stat-sub">个需清理</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- 批量导入 -->
+  <div class="col-lg-4">
+    <div class="form-card">
+      <div class="section-title"><i class="bi bi-cloud-upload me-2" style="color:#ff6900;"></i>批量导入Token</div>
+      <form method="post" action="/inventory/add">
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:13px;">商品类型</label>
+          <select name="product" class="form-select form-select-sm">
+            <option>Claude API Token 100K</option>
+            <option>GPT-4 API Token 50K</option>
+            <option>通用AI Token包月</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:13px;">到期日期</label>
+          <input type="date" name="expire_date" class="form-control form-control-sm" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:13px;">Token列表 <span style="color:#aaa;">（每行一个）</span></label>
+          <textarea name="tokens_text" class="form-control form-control-sm" rows="8" placeholder="sk-xxxxxxxxxxxxxxxx&#10;sk-yyyyyyyyyyyyyyyy&#10;..." required style="font-family:monospace;font-size:12px;"></textarea>
+        </div>
+        <button type="submit" class="btn btn-orange w-100"><i class="bi bi-cloud-upload me-2"></i>导入库存</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Token列表 -->
+  <div class="col-lg-8">
+    <div class="table-card">
+      <div class="table-header">
+        <h6><i class="bi bi-key me-2" style="color:#ff6900;"></i>库存列表（最近50条）</h6>
+      </div>
+      <table class="table mb-0">
+        <thead><tr>
+          <th>#</th><th>Token（脱敏）</th><th>商品</th><th>状态</th><th>到期日</th><th>入库时间</th>
+        </tr></thead>
+        <tbody>
+        {% for t in tokens %}
+        <tr>
+          <td style="color:#ccc;font-size:12px;">{{ t[0] }}</td>
+          <td><code style="font-size:12px;color:#666;">{{ t[1][:12] }}...{{ t[1][-4:] }}</code></td>
+          <td style="font-size:12px;">{{ t[2] }}</td>
+          <td>
+            {% if t[3]=='unused' %}
+            <span class="badge badge-delivered"><span class="dot dot-green" style="margin-right:4px;"></span>可售</span>
+            {% elif t[3]=='sold' %}
+            <span class="badge badge-pending">已售</span>
+            {% else %}
+            <span class="badge badge-refunded">过期</span>
+            {% endif %}
+          </td>
+          <td style="font-size:12px;color:#888;">{{ t[4] }}</td>
+          <td style="font-size:12px;color:#aaa;">{{ t[5] }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center py-4 text-muted">暂无库存，请导入Token</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

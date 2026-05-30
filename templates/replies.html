@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}自动回复 · 闲鱼AI自动化交付平台{% endblock %}
+{% block page_title %}自动客服回复设置{% endblock %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="form-card">
+      <div class="section-title"><i class="bi bi-plus-circle me-2" style="color:#ff6900;"></i>添加回复规则</div>
+      <form method="post" action="/replies/add">
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:13px;">触发关键词 <span style="color:#aaa;">（多个用 | 分隔）</span></label>
+          <input type="text" name="keywords" class="form-control form-control-sm" placeholder="例如：发货|什么时候|多久" required>
+          <div class="form-text">买家消息包含任意关键词时触发</div>
+        </div>
+        <div class="mb-4">
+          <label class="form-label fw-semibold" style="font-size:13px;">自动回复内容</label>
+          <textarea name="reply" class="form-control form-control-sm" rows="5" placeholder="请输入自动回复的话术内容..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-orange w-100"><i class="bi bi-plus-circle me-2"></i>添加规则</button>
+      </form>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="table-card">
+      <div class="table-header">
+        <h6><i class="bi bi-chat-dots me-2" style="color:#ff6900;"></i>当前回复规则（共{{ replies|length }}条）</h6>
+      </div>
+      <div class="p-3">
+        {% for r in replies %}
+        <div style="background:#f9f9f9;border-radius:12px;padding:16px;margin-bottom:12px;border-left:3px solid {{ '#ff6900' if r[3]==1 else '#ddd' }};">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div>
+              {% for kw in r[1].split('|') %}
+              <span style="background:#fff3e8;color:#ff6900;border-radius:20px;padding:2px 10px;font-size:12px;margin-right:4px;font-weight:600;">{{ kw }}</span>
+              {% endfor %}
+            </div>
+            <form method="post" action="/replies/delete/{{ r[0] }}">
+              <button type="submit" class="btn btn-sm btn-outline-danger" style="border-radius:6px;padding:2px 8px;font-size:12px;" onclick="return confirm('确认删除？')">
+                <i class="bi bi-trash"></i>
+              </button>
+            </form>
+          </div>
+          <p style="margin:0;font-size:13px;color:#444;line-height:1.6;">{{ r[2] }}</p>
+        </div>
+        {% else %}
+        <div class="text-center py-4 text-muted">暂无回复规则，请添加</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

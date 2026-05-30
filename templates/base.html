@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}闲鱼AI自动化交付平台{% endblock %}</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+<style>
+:root{--orange:#ff6900;--orange-light:#fff3e8;--sidebar-w:240px;}
+body{font-family:'Microsoft YaHei',sans-serif;background:#f5f6fa;margin:0;}
+/* Sidebar */
+.sidebar{position:fixed;top:0;left:0;width:var(--sidebar-w);height:100vh;background:linear-gradient(180deg,#1a1a2e 0%,#16213e 100%);z-index:100;display:flex;flex-direction:column;}
+.sidebar-brand{padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,.08);}
+.sidebar-brand .logo{width:40px;height:40px;background:linear-gradient(135deg,var(--orange),#ff9500);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+.sidebar-brand .logo i{font-size:20px;color:#fff;}
+.sidebar-brand h6{color:#fff;font-weight:700;font-size:13px;margin:0;line-height:1.3;}
+.sidebar-brand small{color:#aaa;font-size:11px;}
+.sidebar-nav{flex:1;padding:12px 0;overflow-y:auto;}
+.nav-item a{display:flex;align-items:center;padding:11px 20px;color:#bbb;text-decoration:none;font-size:14px;transition:.15s;border-left:3px solid transparent;gap:10px;}
+.nav-item a:hover{color:#fff;background:rgba(255,255,255,.06);}
+.nav-item a.active{color:#fff;background:rgba(255,105,0,.15);border-left-color:var(--orange);}
+.nav-item a i{font-size:16px;width:18px;text-align:center;}
+.nav-section{padding:16px 20px 6px;font-size:10px;color:#555;letter-spacing:1.5px;text-transform:uppercase;}
+.sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.08);}
+.sidebar-footer a{color:#aaa;font-size:13px;text-decoration:none;display:flex;align-items:center;gap:8px;}
+.sidebar-footer a:hover{color:#fff;}
+/* Main */
+.main-content{margin-left:var(--sidebar-w);min-height:100vh;}
+.topbar{background:#fff;padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #eee;position:sticky;top:0;z-index:50;}
+.topbar h5{font-weight:700;color:#2c2c2c;margin:0;font-size:17px;}
+.topbar .user-info{display:flex;align-items:center;gap:10px;font-size:14px;color:#666;}
+.topbar .user-avatar{width:34px;height:34px;background:linear-gradient(135deg,var(--orange),#ff9500);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;}
+.page-body{padding:24px 28px;}
+/* Status badge */
+.badge-delivered{background:#e6f7f0;color:#00a854;}
+.badge-pending{background:#fff7e6;color:#fa8c16;}
+.badge-refunded{background:#fff1f0;color:#f5222d;}
+/* Stat card */
+.stat-card{background:#fff;border-radius:16px;padding:22px;border:1px solid #f0f0f0;transition:.2s;}
+.stat-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.08);transform:translateY(-2px);}
+.stat-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px;}
+.stat-label{font-size:13px;color:#888;margin-bottom:4px;}
+.stat-value{font-size:26px;font-weight:700;color:#2c2c2c;line-height:1;}
+.stat-sub{font-size:12px;color:#aaa;margin-top:6px;}
+/* Table */
+.table-card{background:#fff;border-radius:16px;border:1px solid #f0f0f0;overflow:hidden;}
+.table-card .table-header{padding:18px 20px 14px;border-bottom:1px solid #f5f5f5;display:flex;align-items:center;justify-content:space-between;}
+.table-card .table-header h6{font-weight:700;margin:0;color:#2c2c2c;}
+.table th{font-size:12px;color:#888;font-weight:600;letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid #f0f0f0;padding:10px 16px;white-space:nowrap;}
+.table td{padding:12px 16px;font-size:13px;color:#444;vertical-align:middle;border-bottom:1px solid #f8f8f8;}
+.table tr:last-child td{border-bottom:none;}
+/* Form card */
+.form-card{background:#fff;border-radius:16px;border:1px solid #f0f0f0;padding:24px;}
+.section-title{font-weight:700;font-size:15px;color:#2c2c2c;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid #f0f0f0;}
+/* Btn */
+.btn-orange{background:linear-gradient(135deg,#ff6900,#ff9500);border:none;color:#fff;font-weight:600;border-radius:8px;padding:8px 18px;font-size:14px;}
+.btn-orange:hover{opacity:.9;color:#fff;}
+/* Status dot */
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;}
+.dot-green{background:#52c41a;}
+.dot-orange{background:#fa8c16;}
+.dot-red{background:#f5222d;}
+</style>
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sidebar-brand">
+    <div class="logo"><i class="bi bi-robot"></i></div>
+    <h6>闲鱼AI自动化<br>交付平台</h6>
+    <small>Auto-Delivery System</small>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">主要功能</div>
+    <div class="nav-item">
+      <a href="/dashboard" class="{{ 'active' if active=='dashboard' }}">
+        <i class="bi bi-grid-1x2"></i>运营概览
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="/orders" class="{{ 'active' if active=='orders' }}">
+        <i class="bi bi-receipt"></i>订单管理
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="/inventory" class="{{ 'active' if active=='inventory' }}">
+        <i class="bi bi-archive"></i>Token库存
+      </a>
+    </div>
+    <div class="nav-section">配置</div>
+    <div class="nav-item">
+      <a href="/replies" class="{{ 'active' if active=='replies' }}">
+        <i class="bi bi-chat-dots"></i>自动回复
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="/logs" class="{{ 'active' if active=='logs' }}">
+        <i class="bi bi-terminal"></i>系统日志
+      </a>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="/logout"><i class="bi bi-box-arrow-left"></i>退出登录</a>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main-content">
+  <div class="topbar">
+    <h5>{% block page_title %}{% endblock %}</h5>
+    <div class="user-info">
+      <span class="dot dot-green"></span>系统运行中
+      <div class="user-avatar ms-2">{{ user[0]|upper }}</div>
+      <span>{{ user }}</span>
+    </div>
+  </div>
+  <div class="page-body">
+    {% block content %}{% endblock %}
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}订单管理 · 闲鱼AI自动化交付平台{% endblock %}
+{% block page_title %}订单管理{% endblock %}
+{% block content %}
+<div class="d-flex gap-2 mb-4">
+  <a href="/orders?status=all" class="btn {{ 'btn-orange' if status=='all' else 'btn-outline-secondary' }} btn-sm">全部（{{ total if status=='all' else '' }}）</a>
+  <a href="/orders?status=delivered" class="btn {{ 'btn-orange' if status=='delivered' else 'btn-outline-secondary' }} btn-sm">已发货</a>
+  <a href="/orders?status=pending" class="btn {{ 'btn-orange' if status=='pending' else 'btn-outline-secondary' }} btn-sm">待处理</a>
+  <a href="/orders?status=refunded" class="btn {{ 'btn-orange' if status=='refunded' else 'btn-outline-secondary' }} btn-sm">已退款</a>
+</div>
+<div class="table-card">
+  <div class="table-header">
+    <h6><i class="bi bi-receipt me-2" style="color:#ff6900;"></i>订单列表 · 共 {{ total }} 笔</h6>
+    <span style="font-size:13px;color:#888;">全部由系统自动处理</span>
+  </div>
+  <table class="table mb-0">
+    <thead><tr>
+      <th>#</th><th>订单号</th><th>买家</th><th>商品</th><th>实付金额</th><th>状态</th><th>下单时间</th><th>发货完成</th>
+    </tr></thead>
+    <tbody>
+    {% for o in orders %}
+    <tr>
+      <td style="color:#ccc;font-size:12px;">{{ loop.index + (page-1)*15 }}</td>
+      <td><code style="font-size:12px;color:#666;">{{ o[0] }}</code></td>
+      <td>{{ o[1] }}</td>
+      <td>{{ o[2] }}</td>
+      <td><strong style="color:#ff6900;">¥{{ o[3] }}</strong></td>
+      <td>
+        {% if o[4]=='delivered' %}
+        <span class="badge badge-delivered"><i class="bi bi-check-circle me-1"></i>已发货</span>
+        {% elif o[4]=='pending' %}
+        <span class="badge badge-pending"><i class="bi bi-hourglass me-1"></i>待处理</span>
+        {% else %}
+        <span class="badge badge-refunded"><i class="bi bi-x-circle me-1"></i>已退款</span>
+        {% endif %}
+      </td>
+      <td style="font-size:12px;color:#888;">{{ o[5] }}</td>
+      <td style="font-size:12px;color:#52c41a;">{{ o[6] or '—' }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="8" class="text-center py-4 text-muted">暂无订单</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% if total_pages > 1 %}
+  <div class="p-3 d-flex justify-content-center gap-1">
+    {% if page > 1 %}<a href="/orders?status={{ status }}&page={{ page-1 }}" class="btn btn-sm btn-outline-secondary">上一页</a>{% endif %}
+    {% for p in range(1, total_pages+1) %}
+    <a href="/orders?status={{ status }}&page={{ p }}" class="btn btn-sm {{ 'btn-orange' if p==page else 'btn-outline-secondary' }}">{{ p }}</a>
+    {% endfor %}
+    {% if page < total_pages %}<a href="/orders?status={{ status }}&page={{ page+1 }}" class="btn btn-sm btn-outline-secondary">下一页</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

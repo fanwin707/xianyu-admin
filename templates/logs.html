@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}系统日志 · 闲鱼AI自动化交付平台{% endblock %}
+{% block page_title %}系统运行日志{% endblock %}
+{% block content %}
+<div class="table-card">
+  <div class="table-header">
+    <h6><i class="bi bi-terminal me-2" style="color:#ff6900;"></i>运行日志（最近100条）</h6>
+    <span style="font-size:13px;color:#888;">实时记录系统所有操作</span>
+  </div>
+  <div style="padding:16px;">
+    <div style="background:#1a1a2e;border-radius:12px;padding:20px;font-family:'Courier New',monospace;font-size:13px;max-height:620px;overflow-y:auto;">
+      {% for log in logs %}
+      <div style="margin-bottom:6px;line-height:1.6;">
+        <span style="color:#555;">{{ log[3] }}</span>
+        <span style="margin-left:12px;
+          {% if log[1]=='INFO' %}color:#52c41a;
+          {% elif log[1]=='WARN' %}color:#faad14;
+          {% elif log[1]=='ERROR' %}color:#ff4d4f;
+          {% else %}color:#aaa;{% endif %}
+          font-weight:600;">[{{ log[1] }}]</span>
+        <span style="color:#e0e0e0;margin-left:8px;">{{ log[2] }}</span>
+      </div>
+      {% else %}
+      <div style="color:#555;">暂无日志</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
