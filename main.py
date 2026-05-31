@@ -180,6 +180,65 @@ async def go(request: Request):
         return RedirectResponse("/login", status_code=302)
     return RedirectResponse("/dashboard", status_code=302)
 
+@app.get("/oauth", response_class=HTMLResponse)
+async def oauth_callback(request: Request):
+    """OAuth 专用回调页，无需登录，JS 捕获 URL fragment 中的 access_token"""
+    return HTMLResponse("""<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8">
+<title>授权成功 · 获取Token</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:'Microsoft YaHei',sans-serif;background:#f0f2f5;
+     display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;}
+.card{background:#fff;border-radius:16px;padding:40px 36px;max-width:640px;width:92%;
+      box-shadow:0 8px 32px rgba(0,0,0,.1);}
+h2{margin:0 0 8px;color:#ff6900;font-size:22px;}
+.sub{color:#888;font-size:14px;margin-bottom:24px;}
+.label{font-size:13px;font-weight:600;color:#444;margin-bottom:8px;}
+.token-box{background:#0d1117;color:#7ee787;padding:18px 16px;border-radius:10px;
+           font-family:'Courier New',monospace;font-size:13px;word-break:break-all;
+           line-height:1.8;margin-bottom:12px;position:relative;}
+.copy-btn{position:absolute;top:12px;right:12px;background:#ff6900;color:#fff;
+          border:none;border-radius:6px;padding:4px 12px;font-size:12px;
+          cursor:pointer;font-family:inherit;}
+.copy-btn:hover{opacity:.85}
+.tip{font-size:13px;color:#666;background:#fff8f0;border-left:3px solid #ff6900;
+     padding:12px 14px;border-radius:6px;margin-top:16px;}
+.err{color:#f5222d;font-weight:600;}
+</style></head>
+<body>
+<div class="card">
+  <h2>🔑 授权成功！</h2>
+  <p class="sub">请复制下方 Access Token 发送给 Claude</p>
+  <div class="label">您的 Access Token：</div>
+  <div class="token-box" id="box">
+    <span id="token-text">检测中...</span>
+    <button class="copy-btn" onclick="copyToken()">复制</button>
+  </div>
+  <p id="err" class="err" style="display:none">⚠️ 未检测到 Token，请重新授权。</p>
+  <div class="tip">✅ 将上方 Token 完整复制后粘贴给 Claude，机器人即可正式启动。</div>
+</div>
+<script>
+const hash = window.location.hash.replace(/^#/,'');
+const p = Object.fromEntries(new URLSearchParams(hash));
+const el = document.getElementById('token-text');
+if (p.access_token) {
+  el.textContent = p.access_token;
+} else {
+  el.style.display = 'none';
+  document.getElementById('err').style.display = 'block';
+}
+function copyToken(){
+  const t = document.getElementById('token-text').textContent;
+  navigator.clipboard.writeText(t).then(()=>{
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent='已复制✓'; btn.style.background='#52c41a';
+    setTimeout(()=>{btn.textContent='复制';btn.style.background='#ff6900';},2000);
+  });
+}
+</script>
+</body></html>""")
+
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request, "error": ""})
