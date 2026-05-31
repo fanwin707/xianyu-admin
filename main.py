@@ -182,7 +182,73 @@ async def go(request: Request):
 
 @app.get("/oauth", response_class=HTMLResponse)
 async def oauth_callback(request: Request):
-    """OAuth 专用回调页，无需登录，JS 捕获 URL fragment 中的 access_token"""
+    """OAuth 回调页：支持授权码模式（code）和隐式模式（fragment）"""
+    import urllib.request, urllib.parse
+
+    code  = request.query_params.get("code")
+    error = request.query_params.get("error")
+    error_desc = request.query_params.get("error_description", "")
+
+    # ── 授权码模式：服务端换取 token ──────────────────────────
+    if code:
+        APP_KEY    = os.getenv("TAOBAO_APP_KEY",    "35359417")
+        APP_SECRET = os.getenv("TAOBAO_APP_SECRET", "62be0eccdb44c2386c85a2bc3b40958b")
+        REDIRECT   = "https://xianyu-admin.onrender.com/oauth"
+        try:
+            payload = urllib.parse.urlencode({
+                "grant_type":    "authorization_code",
+                "code":          code,
+                "client_id":     APP_KEY,
+                "client_secret": APP_SECRET,
+                "redirect_uri":  REDIRECT,
+            }).encode()
+            req = urllib.request.Request(
+                "https://oauth.taobao.com/token",
+                data=payload, method="POST"
+            )
+            import json as _json
+            with urllib.request.urlopen(req, timeout=10) as r:
+                data = _json.loads(r.read())
+            if "access_token" in data:
+                tok = data["access_token"]
+                return HTMLResponse(f"""<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><title>授权成功</title>
+<style>body{{font-family:'Microsoft YaHei',sans-serif;background:#f0f2f5;
+  display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;}}
+.card{{background:#fff;border-radius:16px;padding:40px;max-width:620px;width:92%;
+  box-shadow:0 8px 32px rgba(0,0,0,.1);}}
+h2{{color:#52c41a;margin:0 0 8px;}}
+.sub{{color:#888;font-size:14px;margin-bottom:24px;}}
+.box{{background:#0d1117;color:#7ee787;padding:18px;border-radius:10px;
+  font-family:monospace;font-size:14px;word-break:break-all;margin-bottom:16px;}}
+.tip{{background:#f6ffed;border-left:3px solid #52c41a;padding:12px 14px;
+  border-radius:6px;font-size:13px;color:#555;}}
+.btn{{display:inline-block;margin-top:16px;padding:10px 28px;
+  background:#ff6900;color:#fff;border-radius:8px;text-decoration:none;
+  font-weight:600;cursor:pointer;border:none;font-size:15px;}}
+</style></head><body><div class="card">
+  <h2>✅ 授权成功！</h2>
+  <p class="sub">Access Token 已获取，请复制下方内容发给 Claude</p>
+  <div class="box" id="tok">{tok}</div>
+  <button class="btn" onclick="navigator.clipboard.writeText('{tok}')
+    .then(()=>this.textContent='已复制 ✓')">复制 Token</button>
+  <div class="tip" style="margin-top:16px;">将上方 Token 发给 Claude，机器人即可正式启动 🚀</div>
+</div></body></html>""")
+            else:
+                return HTMLResponse(f"<pre>换取token失败: {data}</pre>")
+        except Exception as e:
+            return HTMLResponse(f"<pre>请求失败: {e}</pre>")
+
+    # ── 错误处理 ───────────────────────────────────────────────
+    if error:
+        return HTMLResponse(f"""<html><body style='font-family:sans-serif;padding:40px'>
+<h2 style='color:#f5222d'>授权失败</h2>
+<p>错误码：{error}</p>
+<p>说明：{urllib.parse.unquote(error_desc)}</p>
+<p>请先在淘宝账号安全中心撤销本应用授权，再重新打开授权链接。</p>
+</body></html>""")
+
+    # ── 隐式模式兜底（JS 读取 fragment）──────────────────────
     return HTMLResponse("""<!DOCTYPE html>
 <html lang="zh-CN"><head><meta charset="UTF-8">
 <title>授权成功 · 获取Token</title>
