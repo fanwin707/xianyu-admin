@@ -129,6 +129,53 @@ def db():
 # ─── 路由 ─────────────────────────────────────────────────────
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
+    # OAuth 回调落点：不跳转，让 JS 读取 URL fragment 中的 access_token
+    return HTMLResponse("""<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8">
+<title>OAuth 回调</title>
+<style>
+body{font-family:'Microsoft YaHei',sans-serif;background:#f5f6fa;display:flex;align-items:center;
+     justify-content:center;min-height:100vh;margin:0;}
+.box{background:#fff;border-radius:16px;padding:40px;max-width:600px;width:90%;
+     box-shadow:0 4px 20px rgba(0,0,0,.1);}
+h2{color:#ff6900;margin-top:0;}
+.token-box{background:#1a1a2e;color:#52c41a;padding:16px;border-radius:10px;
+           font-family:monospace;font-size:13px;word-break:break-all;margin:16px 0;}
+.tip{font-size:13px;color:#888;margin-top:16px;}
+.btn{display:inline-block;margin-top:16px;padding:10px 24px;background:#ff6900;
+     color:#fff;border-radius:8px;text-decoration:none;font-weight:600;}
+#no-token{display:none;color:#f5222d;}
+</style></head>
+<body><div class="box">
+  <h2>🔑 OAuth 授权成功</h2>
+  <p>已捕获您的 Access Token，请复制下方内容发给 Claude：</p>
+  <div class="token-box" id="token-display">正在读取...</div>
+  <p id="no-token">⚠️ 未检测到 Token，请重新授权。</p>
+  <div class="tip">复制以上 Token 后发送给 Claude，机器人即可启动。</div>
+  <a href="/dashboard" class="btn">进入管理后台</a>
+</div>
+<script>
+const hash = window.location.hash.substring(1);
+const params = Object.fromEntries(new URLSearchParams(hash));
+const el = document.getElementById('token-display');
+if (params.access_token) {
+  el.textContent = 'ACCESS_TOKEN=' + params.access_token;
+  if (params.r_token) {
+    el.textContent += '\\nR_TOKEN=' + params.r_token;
+  }
+  if (params.expires_in) {
+    el.textContent += '\\n有效期（秒）=' + params.expires_in;
+  }
+} else {
+  el.style.display = 'none';
+  document.getElementById('no-token').style.display = 'block';
+}
+</script>
+</body></html>""")
+
+
+@app.get("/go", response_class=HTMLResponse)
+async def go(request: Request):
     if not current_user(request):
         return RedirectResponse("/login", status_code=302)
     return RedirectResponse("/dashboard", status_code=302)
